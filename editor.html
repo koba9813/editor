@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML/CSSエディタ</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .toolbar { background: #333; color: white; padding: 10px; display: flex; }
+        .toolbar button { margin-right: 10px; padding: 5px 10px; }
+        .editor-container { display: flex; height: 90vh; }
+        .editor { flex: 1; padding: 10px; border: 1px solid #ccc; overflow: auto; white-space: pre-wrap; font-family: monospace; }
+        .preview { flex: 1; border: 1px solid #ccc; background: white; }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button onclick="newFile()">新規作成</button>
+        <button onclick="saveFile()">保存</button>
+        <button onclick="editFile()">ファイル編集</button>
+    </div>
+    <div class="editor-container">
+        <textarea class="editor"></textarea>
+        <iframe class="preview"></iframe>
+    </div>
+    <script>
+        const editor = document.querySelector(".editor");
+        const preview = document.querySelector(".preview");
+        const defaultTemplate = `<!DOCTYPE html>
+<head>
+    <title>Hello World</title>
+</head>
+<body>
+    <h1>Hello World!</h1>
+</body>
+</html>`;
+
+        function newFile() {
+            editor.value = defaultTemplate;
+            updatePreview();
+        }
+        function saveFile() {
+            const blob = new Blob([editor.value], { type: "text/html" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "file.html";
+            a.click();
+        }
+        function editFile() {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "text/html";
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    editor.value = e.target.result;
+                    updatePreview();
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+        function updatePreview() {
+            preview.srcdoc = editor.value;
+        }
+        editor.addEventListener("input", updatePreview);
+
+        // 初回ロード時にデフォルトのテンプレートをセット
+        newFile();
+    </script>
+</body>
+</html>
